@@ -6,7 +6,8 @@ asgiref==3.8.1
 asttokens==3.0.0
 async-lru==2.0.4
 attrs==24.3.0
-audioop-lts==0.2.1
+# audioop-lts removed - incompatible with Python 3.9
+# audioop is built-in to Python 3.x, no need for separate package
 babel==2.16.0
 beautifulsoup4==4.12.3
 bleach==6.2.0
@@ -141,8 +142,8 @@ soupsieve==2.6
 SpeechRecognition==3.14.3
 sqlparse==0.5.3
 stack-data==0.6.3
-standard-aifc==3.13.0
-standard-chunk==3.13.0
+# standard-aifc and standard-chunk removed - incompatible with Python 3.9
+# These are Python 3.13+ specific packages
 terminado==0.18.1
 tinycss2==1.4.0
 tk==0.1.0
