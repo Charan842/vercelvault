@@ -146,6 +146,8 @@ LOGOUT_REDIRECT_URL = '/'
 if 'VERCEL' in os.environ:
     DEBUG = False
     ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1']
+    # Ensure static files are collected properly
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 else:
     DEBUG = True
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
