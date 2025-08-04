@@ -1,0 +1,382 @@
+{% extends 'storageapp/base.html' %}
+{% block title %}{{ album.name }} - Album{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.css" rel="stylesheet">
+<style>
+.sortable-ghost {
+    opacity: 0.5;
+}
+.sortable-chosen {
+    transform: rotate(5deg);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.media-item {
+    transition: all 0.3s ease;
+}
+.media-item.reorder-active {
+    border: 2px dashed #ffc107;
+    background: #fffbe6;
+    cursor: grab !important;
+    touch-action: none !important;
+    /* Mobile optimizations */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.reorder-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    z-index: 10;
+}
+@media (max-width: 768px) {
+    .reorder-indicator {
+        font-size: 0.7em;
+        padding: 1px 4px;
+    }
+    .media-item.reorder-active {
+        /* Larger touch target for mobile */
+        min-height: 120px;
+    }
+    .media-item.reorder-active .card {
+        /* Ensure the entire card is draggable */
+        cursor: grab !important;
+        touch-action: none !important;
+    }
+}
+/* Android Chrome specific optimizations */
+@media (max-width: 768px) {
+    .media-item.reorder-active * {
+        pointer-events: none;
+    }
+    .media-item.reorder-active {
+        pointer-events: auto;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3"><i class="fas fa-folder"></i> {{ album.name }}</h1>
+    <div>
+        <button id="shareAlbumBtn" class="btn btn-outline-success btn-sm me-2" type="button">
+            <i class="fas fa-share-alt"></i> Share
+        </button>
+        <button id="unshareAlbumBtn" class="btn btn-outline-danger btn-sm me-2" type="button" style="display: none;">
+            <i class="fas fa-unlink"></i> Unshare
+        </button>
+        <button id="toggleReorder" class="btn btn-outline-warning btn-sm me-2 d-none d-lg-block">
+            <i class="fas fa-arrows-alt"></i> Toggle Reorder Mode
+        </button>
+        <a href="{% url 'album_edit_contents' album.id %}" class="btn btn-outline-primary btn-sm me-2">Edit Photos/Videos in Album</a>
+        <a href="{% url 'album_edit' album.id %}" class="btn btn-outline-secondary btn-sm me-2">Edit</a>
+        <a href="{% url 'album_delete' album.id %}" class="btn btn-outline-danger btn-sm me-2">Delete</a>
+        <a href="{% url 'album_list' %}" class="btn btn-secondary">Back to Albums</a>
+    </div>
+</div>
+{% if reorder_mode_hint %}<div class="alert alert-info text-center mb-2" id="reorderHint" style="display:none;">Long-press and drag to reorder on mobile/tablet.</div>{% endif %}
+<p class="text-muted">{{ album.description }}</p>
+{% if album.cover_image %}
+    <img src="{{ album.cover_image.url }}" class="img-fluid mb-4" alt="{{ album.name }} cover" style="max-height:200px;">
+{% endif %}
+
+<h4 class="mt-4"><i class="fas fa-images"></i> Photos</h4>
+{% if photos %}
+    <div id="photosContainer" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
+        {% for photo in photos %}
+        <div class="col media-item" data-id="{{ photo.id }}" data-type="photo" data-order="{{ forloop.counter0 }}">
+            <div class="card h-100 shadow-sm position-relative">
+                <div class="reorder-indicator" style="display: none;">Drag to reorder</div>
+                <a href="{{ photo.image.url }}" target="_blank"><img src="{{ photo.image.url }}" class="card-img-top" alt="{{ photo.title }}"></a>
+                <div class="card-body">
+                    <h5 class="card-title">{{ photo.title|default:'Untitled' }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-muted mb-4">No photos in this album.</div>
+{% endif %}
+
+<h4 class="mt-4"><i class="fas fa-video"></i> Videos</h4>
+{% if videos %}
+    <div id="videosContainer" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
+        {% for video in videos %}
+        <div class="col media-item" data-id="{{ video.id }}" data-type="video" data-order="{{ forloop.counter0 }}">
+            <div class="card h-100 shadow-sm position-relative">
+                <div class="reorder-indicator" style="display: none;">Drag to reorder</div>
+                {% if video.thumbnail %}
+                    <a href="{{ video.video_file.url }}" target="_blank"><img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }} thumbnail"></a>
+                {% else %}
+                    <div class="bg-secondary text-white text-center py-5">
+                        <i class="fas fa-film fa-3x"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ video.title|default:'Untitled' }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-muted">No videos in this album.</div>
+{% endif %}
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareModalLabel">Share Album</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div id="shareLinkContainer" style="display:none;">
+          <input type="text" class="form-control mb-2" id="shareLinkInput" readonly>
+          <button class="btn btn-outline-primary" id="copyShareLinkBtn"><i class="fas fa-copy"></i> Copy Link</button>
+        </div>
+        <div id="shareLoading" style="display:none;">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+        </div>
+        <div id="shareError" class="alert alert-danger mt-2" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let reorderMode = false;
+    let photosSortable, videosSortable;
+    const toggleButton = document.getElementById('toggleReorder');
+    const photosContainer = document.getElementById('photosContainer');
+    const videosContainer = document.getElementById('videosContainer');
+    const reorderHint = document.getElementById('reorderHint');
+
+    function reorderMedia(mediaId, mediaType, newIndex) {
+        fetch('{% url "reorder_album_media" album.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${mediaId}&type=${mediaType}&order=${newIndex}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to reorder:', data.error);
+                alert('An error occurred while reordering. Please refresh the page.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while reordering. Please refresh the page.');
+        });
+    }
+
+    function initializeSortable() {
+        if (photosContainer) {
+            photosSortable = new Sortable(photosContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                disabled: true,
+                // Mobile drag: instant drag on touch
+                delay: 0,
+                touchStartThreshold: 1,
+                // Android Chrome specific options
+                preventOnFilter: false,
+                onStart: function(evt) {
+                    // Ensure touch events work properly
+                    if (evt.originalEvent && evt.originalEvent.touches) {
+                        evt.originalEvent.preventDefault();
+                    }
+                },
+                onEnd: function(evt) {
+                    if (reorderMode) {
+                        const item = evt.item;
+                        const newIndex = evt.newIndex;
+                        const mediaId = item.dataset.id;
+                        const mediaType = item.dataset.type;
+                        const items = photosContainer.querySelectorAll('.media-item');
+                        items.forEach((item, index) => {
+                            item.dataset.order = index;
+                        });
+                        reorderMedia(mediaId, mediaType, newIndex);
+                    }
+                }
+            });
+        }
+        if (videosContainer) {
+            videosSortable = new Sortable(videosContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                disabled: true,
+                // Mobile drag: instant drag on touch
+                delay: 0,
+                touchStartThreshold: 1,
+                // Android Chrome specific options
+                preventOnFilter: false,
+                onStart: function(evt) {
+                    // Ensure touch events work properly
+                    if (evt.originalEvent && evt.originalEvent.touches) {
+                        evt.originalEvent.preventDefault();
+                    }
+                },
+                onEnd: function(evt) {
+                    if (reorderMode) {
+                        const item = evt.item;
+                        const newIndex = evt.newIndex;
+                        const mediaId = item.dataset.id;
+                        const mediaType = item.dataset.type;
+                        const items = videosContainer.querySelectorAll('.media-item');
+                        items.forEach((item, index) => {
+                            item.dataset.order = index;
+                        });
+                        reorderMedia(mediaId, mediaType, newIndex);
+                    }
+                }
+            });
+        }
+    }
+    function toggleReorderMode() {
+        reorderMode = !reorderMode;
+        if (reorderMode) {
+            toggleButton.innerHTML = '<i class="fas fa-check"></i> Exit Reorder Mode';
+            toggleButton.classList.remove('btn-outline-warning');
+            toggleButton.classList.add('btn-warning');
+            if (photosSortable) photosSortable.option('disabled', false);
+            if (videosSortable) videosSortable.option('disabled', false);
+            document.querySelectorAll('.reorder-indicator').forEach(ind => ind.style.display = 'block');
+            document.querySelectorAll('.media-item').forEach(item => {
+                item.classList.add('reorder-active');
+            });
+            if (reorderHint) reorderHint.style.display = 'block';
+        } else {
+            toggleButton.innerHTML = '<i class="fas fa-arrows-alt"></i> Toggle Reorder Mode';
+            toggleButton.classList.remove('btn-warning');
+            toggleButton.classList.add('btn-outline-warning');
+            if (photosSortable) photosSortable.option('disabled', true);
+            if (videosSortable) videosSortable.option('disabled', true);
+            document.querySelectorAll('.reorder-indicator').forEach(ind => ind.style.display = 'none');
+            document.querySelectorAll('.media-item').forEach(item => {
+                item.classList.remove('reorder-active');
+            });
+            if (reorderHint) reorderHint.style.display = 'none';
+        }
+    }
+    initializeSortable();
+    if (toggleButton) toggleButton.addEventListener('click', toggleReorderMode);
+
+    // Share functionality
+    const shareBtn = document.getElementById('shareAlbumBtn');
+    const unshareBtn = document.getElementById('unshareAlbumBtn');
+    const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+    const shareLinkContainer = document.getElementById('shareLinkContainer');
+    const shareLinkInput = document.getElementById('shareLinkInput');
+    const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
+    const shareLoading = document.getElementById('shareLoading');
+    const shareError = document.getElementById('shareError');
+    let isShared = {{ is_shared|yesno:'true,false' }};
+    let shareUrl = '{{ share_url }}';
+
+    function showShareLink(url) {
+        shareLinkInput.value = url;
+        shareLinkContainer.style.display = 'block';
+        shareLoading.style.display = 'none';
+        shareError.style.display = 'none';
+        shareModal.show();
+    }
+
+    function showShareError(msg) {
+        shareError.textContent = msg;
+        shareError.style.display = 'block';
+        shareLinkContainer.style.display = 'none';
+        shareLoading.style.display = 'none';
+    }
+
+    function setShareState(shared, url) {
+        isShared = shared;
+        shareUrl = url || '';
+        if (isShared) {
+            shareBtn.style.display = 'none';
+            unshareBtn.style.display = 'block';
+        } else {
+            shareBtn.style.display = 'block';
+            unshareBtn.style.display = 'none';
+        }
+    }
+
+    // Initial state
+    setShareState(isShared, shareUrl);
+
+    shareBtn.addEventListener('click', function() {
+        shareLoading.style.display = 'block';
+        shareLinkContainer.style.display = 'none';
+        shareError.style.display = 'none';
+        shareModal.show();
+        fetch('{% url "share_album" album.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                setShareState(true, data.share_url);
+                showShareLink(data.share_url);
+            } else {
+                showShareError('Failed to create share link.');
+            }
+        })
+        .catch(() => showShareError('Failed to create share link.'));
+    });
+
+    unshareBtn.addEventListener('click', function() {
+        if (!confirm('Disable sharing for this album?')) return;
+        fetch('{% url "unshare_album" album.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                setShareState(false);
+                shareModal.hide();
+                alert('Sharing disabled.');
+            } else {
+                showShareError('Failed to disable sharing.');
+            }
+        })
+        .catch(() => showShareError('Failed to disable sharing.'));
+    });
+
+    copyShareLinkBtn.addEventListener('click', function() {
+        shareLinkInput.select();
+        document.execCommand('copy');
+        copyShareLinkBtn.textContent = 'Copied!';
+        setTimeout(() => { copyShareLinkBtn.textContent = 'Copy Link'; }, 1500);
+    });
+});
+</script>
+{% endblock %} 

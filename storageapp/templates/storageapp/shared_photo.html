@@ -1,0 +1,18 @@
+{% extends 'storageapp/base.html' %}
+{% block title %}Shared Photo{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h2 class="mb-3">{{ photo.title|default:'Untitled' }}</h2>
+                    <img src="{{ photo.image.url }}" class="img-fluid mb-3" alt="{{ photo.title|default:'Photo' }}">
+                    <p class="text-muted">Uploaded by {{ photo.user.username }} on {{ photo.uploaded_at|date:"M d, Y" }}</p>
+                    {% if photo.description %}<p>{{ photo.description }}</p>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,93 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Sign Up - MediaVault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">
+                    <i class="fas fa-user-plus text-primary"></i> Sign Up
+                </h2>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        Please correct the errors below.
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">Username</label>
+                        <div class="col-sm-8">
+                            {{ form.username }}
+                            {% for error in form.username.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">Password</label>
+                        <div class="col-sm-8">
+                            {{ form.password1 }}
+                            {% for error in form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.password2.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">Confirm Password</label>
+                        <div class="col-sm-8">
+                            {{ form.password2 }}
+                            {% for error in form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.phone_number.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">Phone Number</label>
+                        <div class="col-sm-8">
+                            {{ form.phone_number }}
+                            {% for error in form.phone_number.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="{{ form.gmail.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">Gmail</label>
+                        <div class="col-sm-8">
+                            {{ form.gmail }}
+                            {% for error in form.gmail.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-sm-8 offset-sm-4">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-user-plus"></i> Create Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-0">Already have an account? 
+                        <a href="{% url 'login' %}" class="text-decoration-none">Sign In</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

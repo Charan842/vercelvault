@@ -1,0 +1,178 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Storage Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-chart-line"></i> Storage Analytics
+            </h1>
+        </div>
+    </div>
+
+    <!-- Storage Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Storage Used</h5>
+                    <h3 class="card-text">{{ storage_used_mb }} MB</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Storage Limit</h5>
+                    <h3 class="card-text">{{ storage_limit_mb }} MB</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Usage Percentage</h5>
+                    <h3 class="card-text">{{ storage_percentage }}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Usage Chart -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Storage Usage Over Time (Last 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="storageChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Breakdown -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Storage Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="breakdownChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'photos' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-images"></i> View Photos
+                        </a>
+                        <a href="{% url 'videos' %}" class="btn btn-outline-success">
+                            <i class="fas fa-video"></i> View Videos
+                        </a>
+                        <a href="{% url 'album_list' %}" class="btn btn-outline-info">
+                            <i class="fas fa-folder"></i> View Albums
+                        </a>
+                        {% if not profile.has_paid_for_extra_storage %}
+                        <a href="{% url 'pay_for_extra_storage' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-arrow-up"></i> Upgrade Storage
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Storage Usage Over Time Chart
+const ctx = document.getElementById('storageChart').getContext('2d');
+const storageChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ dates|safe }},
+        datasets: [{
+            label: 'Storage Used (MB)',
+            data: {{ storage_values|safe }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Daily Storage Usage'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Storage (MB)'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            }
+        }
+    }
+});
+
+// Storage Breakdown Chart (Pie Chart)
+const breakdownCtx = document.getElementById('breakdownChart').getContext('2d');
+const breakdownChart = new Chart(breakdownCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Used Storage (MB)', 'Available Storage (MB)'],
+        datasets: [{
+            data: [{{ storage_used_mb }}, {{ available_storage_mb }}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            title: {
+                display: true,
+                text: 'Storage Allocation'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

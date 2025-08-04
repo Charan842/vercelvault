@@ -1,0 +1,60 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Shared Album: {{ album.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-dark text-white">
+            <h2 class="mb-0">{{ album.name }}</h2>
+            <p class="mb-0 text-light">Shared by: {{ album.user.username }}</p>
+        </div>
+        <div class="card-body">
+            {% if album.description %}
+                <p class="card-text">{{ album.description }}</p>
+                <hr>
+            {% endif %}
+
+            {% if photos %}
+                <h4 class="mt-4">Photos</h4>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+                    {% for photo in photos %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <a href="{{ photo.image.url }}" data-bs-toggle="tooltip" title="{{ photo.title|default:'View Photo' }}">
+                                    <img src="{{ photo.image.url }}" class="card-img-top" alt="{{ photo.title|default:'Album photo' }}" style="object-fit: cover; height: 200px;">
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if videos %}
+                <h4 class="mt-4">Videos</h4>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for video in videos %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <video controls class="card-img-top" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %} style="height: 200px;">
+                                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ video.title|default:"Untitled Video" }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if not photos and not videos %}
+                <div class="text-center py-5">
+                    <p class="lead">This album is currently empty.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

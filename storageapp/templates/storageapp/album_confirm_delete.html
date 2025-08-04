@@ -1,0 +1,20 @@
+{% extends 'storageapp/base.html' %}
+{% block title %}Delete Album{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-5 text-center">
+                <h2 class="mb-4 text-danger"><i class="fas fa-exclamation-triangle"></i> Delete Album</h2>
+                <p class="lead">Are you sure you want to delete the album <strong>{{ album.name }}</strong>?</p>
+                <p class="text-muted">This will not delete any photos or videos, only the album itself.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg"><i class="fas fa-trash"></i> Yes, Delete Album</button>
+                    <a href="{% url 'album_detail' album.id %}" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

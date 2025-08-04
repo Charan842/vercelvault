@@ -1,0 +1,92 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Upgrade Storage - MediaVault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-5 text-center">
+                <h2 class="mb-4"><i class="fas fa-wallet text-primary"></i> Upgrade Storage</h2>
+                <p class="lead mb-4">
+                    You have used <strong>{{ profile.get_storage_used_mb }} MB</strong> of your free <strong>1,024 MB (1GB)</strong> storage.<br>
+                    To unlock up to <strong>5GB</strong> of storage, please pay <span class="fw-bold">₹100</span>.
+                </p>
+                {% if upgrade_request %}
+                    {% if upgrade_request.status == 'pending' %}
+                        <div class="alert alert-info mb-4">
+                            Your upgrade request is pending admin approval.<br>
+                            You will be notified once it is approved or denied.
+                        </div>
+                        <button class="btn btn-success btn-lg px-5" disabled>
+                            <i class="fas fa-hourglass-half"></i> Waiting for Approval
+                        </button>
+                    {% elif upgrade_request.status == 'approved' %}
+                        <div class="alert alert-success mb-4">
+                            Your storage upgrade request was <strong>approved</strong>! You can now use up to 5GB.
+                        </div>
+                    {% elif upgrade_request.status == 'denied' %}
+                        <div class="alert alert-danger mb-4">
+                            Your storage upgrade request was <strong>denied</strong> by the admin.
+                        </div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="fas fa-rupee-sign"></i> Pay ₹100 &amp; Request Again
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg px-5">
+                            <i class="fas fa-rupee-sign"></i> Pay ₹100 &amp; Unlock 5GB
+                        </button>
+                    </form>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-link">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr class="my-5">
+<h4 class="mb-3">Your Storage Upgrade Request History</h4>
+{% if request_history %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Admin</th>
+                    <th>Processed At</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in request_history %}
+                <tr>
+                    <td>{{ req.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        {% if req.status == 'pending' %}
+                            <span class="badge bg-info text-dark">Pending</span>
+                        {% elif req.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif req.status == 'denied' %}
+                            <span class="badge bg-danger">Denied</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ req.processed_by|default:"-" }}</td>
+                    <td>{% if req.processed_at %}{{ req.processed_at|date:"M d, Y H:i" }}{% else %}-{% endif %}</td>
+                    <td>{{ req.admin_comment|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="text-muted">No upgrade requests yet.</div>
+{% endif %}
+{% endblock %} 

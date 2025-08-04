@@ -1,0 +1,64 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Welcome to MediaVault - Personal Media Storage{% endblock %}
+
+{% block content %}
+<div class="row align-items-center min-vh-75">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold text-primary mb-4">
+            <i class="fas fa-cloud"></i> MediaVault
+        </h1>
+        <h2 class="h3 mb-4">Your Personal Media Storage Solution</h2>
+        <p class="lead mb-4">
+            Store, organize, and access your photos and videos securely in the cloud. 
+            Your memories are safe with us.
+        </p>
+        <div class="d-grid gap-3 d-sm-flex">
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-user-plus"></i> Get Started
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="text-center">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 15rem; color: #0d6efd; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5">
+    <div class="col-12">
+        <h3 class="text-center mb-5">Why Choose MediaVault?</h3>
+    </div>
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Secure Storage</h5>
+                <p class="card-text">Your media is encrypted and stored securely. Only you have access to your files.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-mobile-alt text-primary" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Access Anywhere</h5>
+                <p class="card-text">View your photos and videos from any device, anywhere in the world.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-search text-primary" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Easy Organization</h5>
+                <p class="card-text">Organize your media with titles, descriptions, and powerful search features.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

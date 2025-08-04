@@ -1,0 +1,140 @@
+{% extends 'storageapp/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Welcome back, {{ user.username }}!</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}" class="btn btn-sm btn-danger me-2">
+            <i class="fas fa-user-shield"></i> Admin Panel
+        </a>
+        {% endif %}
+        <a href="{% url 'upload_photo' %}" class="btn btn-sm btn-outline-primary me-2">
+            <i class="fas fa-upload"></i> Upload Photo
+        </a>
+        <a href="{% url 'upload_video' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-upload"></i> Upload Video
+        </a>
+    </div>
+</div>
+
+<!-- Storage Usage -->
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="my-0 fw-normal"><i class="fas fa-hdd"></i> Storage Overview</h4>
+                <div>
+                    <a href="{% url 'storage_analytics' %}" class="btn btn-info btn-sm me-2">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </a>
+                    {% if not profile.has_paid_for_extra_storage %}
+                    <a href="{% url 'pay_for_extra_storage' %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-arrow-up"></i> Upgrade
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if profile.upgrade_requested and not profile.has_paid_for_extra_storage %}
+                <div class="alert alert-info mb-3">
+                    Your upgrade request is pending admin approval. You will be notified once it is approved.
+                </div>
+                {% endif %}
+                <p>
+                    You have used <strong>{{ profile.get_storage_used_mb }} MB</strong> of your <strong>{{ profile.get_storage_limit_mb }} MB</strong> limit.
+                </p>
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ profile.get_storage_percentage }}%;" aria-valuenow="{{ profile.get_storage_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ profile.get_storage_percentage }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row text-center mb-4">
+
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3 class="card-title">{{ photo_count }}</h3>
+                <p class="card-text">
+                    <i class="fas fa-images"></i> Total Photos
+                </p>
+                <a href="{% url 'photos' %}" class="btn btn-primary">View Photos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3 class="card-title">{{ video_count }}</h3>
+                <p class="card-text">
+                    <i class="fas fa-video"></i> Total Videos
+                </p>
+                <a href="{% url 'videos' %}" class="btn btn-primary">View Videos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Recent Photos -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3"><i class="fas fa-images"></i> Recent Photos</h3>
+        {% if recent_photos %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6 g-3">
+                {% for photo in recent_photos %}
+                    <div class="col">
+                        <a href="{{ photo.image.url }}" data-bs-toggle="tooltip" title="{{ photo.title }}">
+                            <img src="{{ photo.image.url }}" class="img-thumbnail" alt="{{ photo.title }}">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You haven't uploaded any photos yet. <a href="{% url 'upload_photo' %}">Upload one now!</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<hr class="my-4">
+
+<!-- Recent Videos -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3"><i class="fas fa-video"></i> Recent Videos</h3>
+        {% if recent_videos %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
+                {% for video in recent_videos %}
+                    <div class="col">
+                        <div class="card shadow-sm">
+                             <a href="{{ video.video_file.url }}">
+                                {% if video.thumbnail %}
+                                    <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }} thumbnail">
+                                {% else %}
+                                    <div class="bg-secondary text-white text-center py-5">
+                                        <i class="fas fa-film fa-3x"></i>
+                                    </div>
+                                {% endif %}
+                             </a>
+                            <div class="card-body">
+                                <p class="card-text">{{ video.title|truncatechars:20 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You haven't uploaded any videos yet. <a href="{% url 'upload_video' %}">Upload one now!</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

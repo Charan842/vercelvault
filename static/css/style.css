@@ -1,0 +1,3 @@
+body, .card, .navbar, .modal-content, .dropdown-menu, .form-control, .form-select, .alert, .toast, .bg-light, .bg-white, .footer, .pagination, .progress, .progress-bar {
+    transition: background-color 0.4s, color 0.4s, border-color 0.4s;
+} 

@@ -1,0 +1,58 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}My Profile - MediaVault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="mb-4 text-center">
+                    <i class="fas fa-user-circle fa-3x text-primary"></i><br>
+                    My Profile
+                </h2>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+                    <li class="list-group-item"><strong>Phone Number:</strong> {{ profile.phone_number|default:'-' }}</li>
+                    <li class="list-group-item"><strong>Gmail:</strong> {{ profile.gmail|default:'-' }}</li>
+                </ul>
+                <!-- Storage Usage Bar -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="my-0 fw-normal"><i class="fas fa-hdd"></i> Storage Usage</h5>
+                        {% if not profile.has_paid_for_extra_storage %}
+                        <a href="{% url 'pay_for_extra_storage' %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-arrow-up"></i> Upgrade
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if profile.upgrade_requested and not profile.has_paid_for_extra_storage %}
+                        <div class="alert alert-info mb-3">
+                            Your upgrade request is pending admin approval. You will be notified once it is approved.
+                        </div>
+                        {% endif %}
+                        <p>
+                            You have used <strong>{{ profile.get_storage_used_mb }} MB</strong> of your <strong>{{ profile.get_storage_limit_mb }} MB</strong> limit.
+                        </p>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ profile.get_storage_percentage }}%;" aria-valuenow="{{ profile.get_storage_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ profile.get_storage_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form action="{% url 'logout' %}" method="post" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+                <div class="text-center mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-link">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

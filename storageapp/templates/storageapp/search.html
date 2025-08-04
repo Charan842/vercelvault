@@ -1,0 +1,90 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Search Results for "{{ query }}"{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Search Media</h1>
+
+    <!-- Search Form -->
+    <div class="card card-body mb-4">
+        <form method="get" action="{% url 'search_media' %}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="q" class="form-control" placeholder="Search by title or description..." value="{{ query|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="type" class="form-select">
+                        <option value="all" {% if media_type == 'all' %}selected{% endif %}>All Media</option>
+                        <option value="photos" {% if media_type == 'photos' %}selected{% endif %}>Photos Only</option>
+                        <option value="videos" {% if media_type == 'videos' %}selected{% endif %}>Videos Only</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <h2 class="h3 mb-3">Results for "{{ query }}"</h2>
+
+    <!-- Photo Results -->
+    {% if photos %}
+        <h3 class="h4"><i class="fas fa-images"></i> Photos ({{ photos.count }})</h3>
+        <hr>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4 mb-4">
+            {% for photo in photos %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <a href="{% url 'photo_detail' photo.id %}">
+                            <img src="{{ photo.image.url }}" class="card-img-top" alt="{{ photo.title }}">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ photo.title|default:"Untitled" }}</h5>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Video Results -->
+    {% if videos %}
+        <h3 class="h4"><i class="fas fa-video"></i> Videos ({{ videos.count }})</h3>
+        <hr>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
+            {% for video in videos %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <a href="{% url 'video_detail' video.id %}">
+                            {% if video.thumbnail %}
+                                <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                            {% else %}
+                                <div class="bg-secondary text-white text-center py-5 card-img-top">
+                                    <i class="fas fa-film fa-4x"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ video.title|default:"Untitled" }}</h5>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- No Results Message -->
+    {% if not photos and not videos and query %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h3>No Results Found</h3>
+            <p class="lead">Your search for "{{ query }}" did not match any media.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %} 

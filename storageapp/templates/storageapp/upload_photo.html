@@ -1,0 +1,122 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}Upload Photos{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">
+                    <i class="fas fa-upload text-primary"></i> Upload a Single Photo
+                </h2>
+                {% if messages %}
+                  <div class="mb-3">
+                    {% for message in messages %}
+                      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" id="single-upload-form">
+                    {% csrf_token %}
+                    {{ single_form.title.label_tag }}
+                    {{ single_form.title }}
+                    {{ single_form.description.label_tag }}
+                    {{ single_form.description }}
+                    {{ single_form.image.label_tag }}
+                    {{ single_form.image }}
+                    <label for="id_single_albums" class="form-label">Add to Albums</label>
+                    {{ single_form.albums }}
+                    <div class="form-text mb-2">Hold Ctrl (Windows) or Cmd (Mac) to select multiple albums.</div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="single_upload" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> Upload Single Photo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">
+                    <i class="fas fa-upload text-primary"></i> Upload Multiple Photos
+                </h2>
+                <!-- Drag and Drop Area -->
+                <div id="photo-drop-area" class="border border-2 border-primary rounded mb-3 p-4 text-center bg-light" style="cursor:pointer;">
+                    <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                    <div>Drag & drop photos here, or click to select files</div>
+                    <div id="photo-drop-files" class="small text-muted mt-2"></div>
+                </div>
+                <form method="post" enctype="multipart/form-data" id="multi-upload-form">
+                    {% csrf_token %}
+                    {{ multi_form.title.label_tag }}
+                    {{ multi_form.title }}
+                    {{ multi_form.description.label_tag }}
+                    {{ multi_form.description }}
+                    <div class="mb-3">
+                        <label for="id_images" class="form-label">Select Photos</label>
+                        <input type="file" name="images" id="id_images" multiple class="form-control" required style="display:none;">
+                    </div>
+                    <label for="id_multi_albums" class="form-label">Add to Albums</label>
+                    {{ multi_form.albums }}
+                    <div class="form-text mb-2">Hold Ctrl (Windows) or Cmd (Mac) to select multiple albums.</div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="multi_upload" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Upload Multiple Photos
+                        </button>
+                        <a href="{% url 'photos' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Spinner Overlay -->
+<div id="upload-spinner-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;">
+    <div class="spinner-border text-primary" style="width:4rem;height:4rem;" role="status">
+        <span class="visually-hidden">Uploading...</span>
+    </div>
+    <div class="mt-3 text-primary h4">Uploading, please wait...</div>
+</div>
+<script>
+function showUploadSpinner() {
+    document.getElementById('upload-spinner-overlay').style.display = 'flex';
+}
+document.getElementById('single-upload-form').addEventListener('submit', showUploadSpinner);
+document.getElementById('multi-upload-form').addEventListener('submit', showUploadSpinner);
+
+// Drag and Drop for Photos
+const photoDropArea = document.getElementById('photo-drop-area');
+const photoInput = document.getElementById('id_images');
+const photoDropFiles = document.getElementById('photo-drop-files');
+photoDropArea.addEventListener('click', () => photoInput.click());
+photoDropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    photoDropArea.classList.add('bg-primary', 'text-white');
+});
+photoDropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    photoDropArea.classList.remove('bg-primary', 'text-white');
+});
+photoDropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    photoDropArea.classList.remove('bg-primary', 'text-white');
+    photoInput.files = e.dataTransfer.files;
+    showPhotoDropFiles();
+});
+photoInput.addEventListener('change', showPhotoDropFiles);
+function showPhotoDropFiles() {
+    if (photoInput.files.length > 0) {
+        let names = Array.from(photoInput.files).map(f => f.name).join(', ');
+        photoDropFiles.textContent = 'Selected: ' + names;
+    } else {
+        photoDropFiles.textContent = '';
+    }
+}
+</script>
+{% endblock %} 

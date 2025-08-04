@@ -1,0 +1,191 @@
+{% extends 'storageapp/base.html' %}
+
+{% block title %}{{ video.title|default:'Video' }} - MediaVault{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Video Player Column -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg mb-4">
+                <div class="card-body p-0">
+                    <video controls class="w-100" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}>
+                        <source src="{{ video.video_file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Column -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">{{ video.title|default:'Untitled Video' }}</h3>
+                    <p class="card-text text-muted">Uploaded by {{ video.user.username }} on {{ video.uploaded_at|date:"F d, Y" }}</p>
+                    
+                    <hr>
+                    
+                    <h5 class="mt-4">Description</h5>
+                    <p>{{ video.description|default:"No description provided."|linebreaksbr }}</p>
+
+                    <h5 class="mt-4">File Details</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            File Name
+                            <span>{{ video.video_file.name|truncatechars:20 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            File Size
+                            <span>{{ video.file_size|filesizeformat }}</span>
+                        </li>
+                        {% if video.duration %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Duration
+                            <span>{{ video.duration }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ video.video_file.url }}" download class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        <form action="{% url 'delete_video' video.id %}" method="post" onsubmit="return confirm('Are you sure you want to permanently delete this video?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash"></i> Delete Video
+                            </button>
+                        </form>
+                        <a href="{% url 'videos' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Gallery
+                        </a>
+                        <button id="shareVideoBtn" class="btn btn-outline-success mt-2" type="button">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                        <button id="unshareVideoBtn" class="btn btn-outline-danger mt-2" type="button" style="display:none;">
+                            <i class="fas fa-unlink"></i> Unshare
+                        </button>
+                    </div>
+                    <!-- Share Modal -->
+                    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="shareModalLabel">Share Video</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body text-center">
+                            <div id="shareLinkContainer" style="display:none;">
+                              <input type="text" class="form-control mb-2" id="shareLinkInput" readonly>
+                              <button class="btn btn-outline-primary" id="copyShareLinkBtn"><i class="fas fa-copy"></i> Copy Link</button>
+                            </div>
+                            <div id="shareLoading" style="display:none;">
+                              <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                            </div>
+                            <div id="shareError" class="alert alert-danger mt-2" style="display:none;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const shareBtn = document.getElementById('shareVideoBtn');
+    const unshareBtn = document.getElementById('unshareVideoBtn');
+    const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+    const shareLinkContainer = document.getElementById('shareLinkContainer');
+    const shareLinkInput = document.getElementById('shareLinkInput');
+    const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
+    const shareLoading = document.getElementById('shareLoading');
+    const shareError = document.getElementById('shareError');
+    let isShared = {{ is_shared|yesno:'true,false' }};
+    let shareUrl = '{{ share_url }}';
+
+    function showShareLink(url) {
+        shareLinkInput.value = url;
+        shareLinkContainer.style.display = 'block';
+        shareLoading.style.display = 'none';
+        shareError.style.display = 'none';
+        shareModal.show();
+    }
+    function showShareError(msg) {
+        shareError.textContent = msg;
+        shareError.style.display = 'block';
+        shareLinkContainer.style.display = 'none';
+        shareLoading.style.display = 'none';
+    }
+    function setShareState(shared, url) {
+        isShared = shared;
+        shareUrl = url || '';
+        if (isShared) {
+            shareBtn.style.display = 'none';
+            unshareBtn.style.display = 'block';
+        } else {
+            shareBtn.style.display = 'block';
+            unshareBtn.style.display = 'none';
+        }
+    }
+    // Initial state
+    setShareState(isShared, shareUrl);
+
+    shareBtn.addEventListener('click', function() {
+        shareLoading.style.display = 'block';
+        shareLinkContainer.style.display = 'none';
+        shareError.style.display = 'none';
+        shareModal.show();
+        fetch('{% url "share_video" video.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                setShareState(true, data.share_url);
+                showShareLink(data.share_url);
+            } else {
+                showShareError('Failed to create share link.');
+            }
+        })
+        .catch(() => showShareError('Failed to create share link.'));
+    });
+    unshareBtn.addEventListener('click', function() {
+        if (!confirm('Disable sharing for this video?')) return;
+        fetch('{% url "unshare_video" video.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                setShareState(false);
+                shareModal.hide();
+                alert('Sharing disabled.');
+            } else {
+                showShareError('Failed to disable sharing.');
+            }
+        })
+        .catch(() => showShareError('Failed to disable sharing.'));
+    });
+    copyShareLinkBtn.addEventListener('click', function() {
+        shareLinkInput.select();
+        document.execCommand('copy');
+        copyShareLinkBtn.textContent = 'Copied!';
+        setTimeout(() => { copyShareLinkBtn.textContent = 'Copy Link'; }, 1500);
+    });
+});
+</script>
+{% endblock %} 

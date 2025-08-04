@@ -1,0 +1,58 @@
+{% extends 'storageapp/base.html' %}
+{% block title %}Edit Album Contents - {{ album.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="mb-4 text-center"><i class="fas fa-edit text-primary"></i> Edit Photos/Videos in Album</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <h4>Photos</h4>
+                    <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+                        {% for photo in photos %}
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="photo_ids" value="{{ photo.id }}" id="photo-{{ photo.id }}" {% if photo.id in selected_photo_ids %}checked{% endif %}>
+                                <label class="form-check-label" for="photo-{{ photo.id }}">
+                                    <img src="{{ photo.image.url }}" alt="{{ photo.title }}" class="img-thumbnail" style="max-height:80px;">
+                                    <div class="small">{{ photo.title|default:'Untitled' }}</div>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <h4>Videos</h4>
+                    <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+                        {% for video in videos %}
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="video_ids" value="{{ video.id }}" id="video-{{ video.id }}" {% if video.id in selected_video_ids %}checked{% endif %}>
+                                <label class="form-check-label" for="video-{{ video.id }}">
+                                    {% if video.thumbnail %}
+                                        <img src="{{ video.thumbnail.url }}" alt="{{ video.title }} thumbnail" class="img-thumbnail" style="max-height:80px;">
+                                    {% else %}
+                                        <div class="bg-secondary text-white text-center py-2" style="height:80px;display:flex;align-items:center;justify-content:center;">
+                                            <i class="fas fa-film fa-lg"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="small">{{ video.title|default:'Untitled' }}</div>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Note:</strong> After saving, you can reorder photos and videos using drag-and-drop on the album detail page.
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-save"></i> Save Changes</button>
+                        <a href="{% url 'album_detail' album.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
