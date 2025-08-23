@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(1koxevmw4aou#+x+o+2cjcd+pv*+(r_$7rk+!)a7!^a)0lc$+'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(1koxevmw4aou#+x+o+2cjcd+pv*+(r_$7rk+!)a7!^a)0lc$+')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG will be set conditionally based on environment
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,16 +76,21 @@ WSGI_APPLICATION = 'storageproduct.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME':'railway',
-        'USER':'postgres',
-        'PASSWORD':'brlJPJwWeSzoYMjBsNvrotpidydDaZMC',
-        'HOST':'metro.proxy.rlwy.net',
-        'PORT':'51654',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:brlJPJwWeSzoYMjBsNvrotpidydDaZMC@metro.proxy.rlwy.net:51654/railway'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
+
+# Handle database connection for Vercel
+if 'VERCEL' in os.environ:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require'
+    }
 
 
 # Password validation
@@ -143,11 +149,24 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Vercel deployment settings
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app,.now.sh').split(',')
+
+# Static files configuration for production
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # Security settings for production
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Vercel specific settings
 if 'VERCEL' in os.environ:
     DEBUG = False
     ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1']
-    # Ensure static files are collected properly
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-else:
-    DEBUG = True
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    # Disable SSL redirect for Vercel
+    SECURE_SSL_REDIRECT = False

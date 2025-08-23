@@ -1,0 +1,14 @@
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=False
+ALLOWED_HOSTS=your-app-name.vercel.app,localhost,127.0.0.1
+
+# Database
+DATABASE_URL=postgresql://username:password@host:port/database_name
+
+# For development, you can set:
+# DEBUG=True
+# ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Copy this file to .env and fill in your actual values
+# DO NOT commit .env to version control

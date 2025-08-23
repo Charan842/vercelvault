@@ -9,4 +9,4 @@ python manage.py collectstatic --noinput
 # Run migrations
 python manage.py migrate
 
-echo "Vercel build completed!"
+echo "Build completed successfully!"
