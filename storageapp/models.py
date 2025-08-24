@@ -8,7 +8,12 @@ from django.urls import reverse
 
 def user_media_path(instance, filename):
     """Generate file path for user media files"""
-    return f'users/{instance.user.username}/{instance.__class__.__name__.lower()}s/{filename}'
+    # Ensure we have a user before creating the path
+    if hasattr(instance, 'user') and instance.user:
+        return f'users/{instance.user.username}/{instance.__class__.__name__.lower()}s/{filename}'
+    else:
+        # Fallback for when user is not set yet
+        return f'uploads/{instance.__class__.__name__.lower()}s/{filename}'
 
 class Album(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='albums')

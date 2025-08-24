@@ -123,8 +123,18 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': 'Awmf2iz90wugM6fJOWqJXjOzTrU',
 }
 
-# Use Cloudinary for media files
+# Force Cloudinary for all media files
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Ensure Cloudinary is used for all file fields
+import cloudinary_storage.storage
+
+# Additional Cloudinary settings
+CLOUDINARY_STORAGE.update({
+    'STATIC_TAG': 'static',
+    'MEDIA_TAG': 'media',
+    'INVALID_VIDEO_ERROR_MESSAGE': 'Please upload a valid video file.',
+})
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -251,6 +251,12 @@ def upload_photo(request):
                     else:
                         photo = single_form.save(commit=False)
                         photo.user = request.user
+                        
+                        # Debug: Check what storage is being used
+                        from django.conf import settings
+                        print(f"DEBUG: DEFAULT_FILE_STORAGE = {settings.DEFAULT_FILE_STORAGE}")
+                        print(f"DEBUG: CLOUDINARY_STORAGE = {settings.CLOUDINARY_STORAGE}")
+                        
                         photo.save()
                         single_form.save_m2m()  # Save albums
                         messages.success(request, 'Photo uploaded successfully!')
