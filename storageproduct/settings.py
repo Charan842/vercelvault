@@ -117,14 +117,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary Configuration with your credentials
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'Root'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '421942161149645'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'Awmf2iz90wugM6fJOWqJXjOzTrU'),
-}
-
-# Use Cloudinary for media files
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Cloudinary Configuration with better error handling
+try:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'Root'),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '421942161149645'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'Awmf2iz90wugM6fJOWqJXjOzTrU'),
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+except Exception as e:
+    print(f"Cloudinary configuration error: {e}")
+    # Fallback to local storage
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
