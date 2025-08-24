@@ -116,23 +116,15 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = 'https://res.cloudinary.com/djkrgoc9o/image/upload/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary Configuration with your credentials
-# Cloudinary Configuration with better error handling
-try:
-    CLOUDINARY_STORAGE = {
+# Cloudinary Configuration
+CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'djkrgoc9o',
     'API_KEY': '421942161149645',
     'API_SECRET': 'Awmf2iz90wugM6fJOWqJXjOzTrU',
-    }
+}
 
 # Use Cloudinary for media files
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    # Cloudinary Configuration
-
-except Exception as e:
-    print(f"Cloudinary configuration error: {e}")
-    # Fallback to local storage
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
