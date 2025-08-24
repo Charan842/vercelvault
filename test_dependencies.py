@@ -28,6 +28,8 @@ def main():
         ("whitenoise", "whitenoise"),
         ("dj-database-url", "dj_database_url"),
         ("gunicorn", "gunicorn"),
+        ("cloudinary", "cloudinary"),
+        ("django-cloudinary-storage", "cloudinary_storage"),
     ]
     
     all_passed = True

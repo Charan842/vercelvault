@@ -7,9 +7,17 @@
     ],
     "routes": [
         {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/admin/static/(.*)",
+            "dest": "/static/admin/$1"
+        },
+        {
             "src": "/(.*)",
             "dest": "storageproduct/wsgi.py"
         }
     ],
-    "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    "buildCommand": "pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput"
 }
