@@ -25,7 +25,8 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 
-# Serve media files during development
+# Serve static files during development
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Don't serve media files locally when using Cloudinary
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

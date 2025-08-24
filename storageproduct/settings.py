@@ -113,7 +113,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files - Cloudinary Configuration
-MEDIA_URL = '/media/'
+MEDIA_URL = 'https://res.cloudinary.com/djkrgoc9o/image/upload/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary Configuration with your credentials
