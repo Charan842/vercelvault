@@ -120,11 +120,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Cloudinary Configuration with better error handling
 try:
     CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'Root'),
-        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '421942161149645'),
-        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'Awmf2iz90wugM6fJOWqJXjOzTrU'),
+    'CLOUD_NAME': 'djkrgoc9o',
+    'API_KEY': '421942161149645',
+    'API_SECRET': 'Awmf2iz90wugM6fJOWqJXjOzTrU',
     }
+
+# Use Cloudinary for media files
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # Cloudinary Configuration
+
 except Exception as e:
     print(f"Cloudinary configuration error: {e}")
     # Fallback to local storage
@@ -154,3 +158,20 @@ if 'VERCEL' in os.environ:
     ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1']
     # Disable SSL redirect for Vercel
     SECURE_SSL_REDIRECT = False
+
+import logging
+
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}    
